@@ -1,7 +1,4 @@
 services:
   - type: web
     name: filtro-sony-a7iv
-    env: python
-    # Se descarga ExifTool directamente desde su repositorio para evitar bloqueos de administrador (apt-get)
-    buildCommand: "wget https://github.com/exiftool/exiftool/archive/refs/tags/13.10.tar.gz -O exiftool.tar.gz && tar -xzf exiftool.tar.gz && mv exiftool-13.10 exiftool-bin && pip install -r requirements.txt"
-    startCommand: "gunicorn --timeout 300 app:app"
+    env: docker
