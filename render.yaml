@@ -3,4 +3,5 @@ services:
     name: filtro-sony-a7iv
     env: python
     buildCommand: "apt-get update && apt-get install -y libimage-exiftool-perl && pip install -r requirements.txt"
-    startCommand: "gunicorn app:app"
+    # Se aumenta el timeout de 30 segundos (default) a 300 segundos (5 minutos)
+    startCommand: "gunicorn --timeout 300 app:app"
