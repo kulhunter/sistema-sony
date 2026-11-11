@@ -2,11 +2,10 @@ from flask import Flask, request, send_file
 from werkzeug.utils import secure_filename
 import subprocess
 import os
-import traceback
 
 app = Flask(__name__)
 
-# Permitir videos de hasta 500 MB (por defecto Flask es menos tolerante)
+# Permitir videos de hasta 500 MB
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024 
 
 @app.route('/')
@@ -24,7 +23,7 @@ def index():
         </style>
     </head>
     <body>
-        <h2>Bypass de Metadatos V2</h2>
+        <h2>Bypass de Metadatos V3</h2>
         <p>Sube tu video del iPhone.</p>
         <form action="/procesar" method="post" enctype="multipart/form-data">
             <input type="file" name="video" accept="video/mp4,video/quicktime,video/*" required><br>
@@ -39,21 +38,18 @@ def procesar():
     try:
         file = request.files.get('video')
         if not file:
-            return "Error: No llegó el archivo al servidor. Intenta con un video más liviano.", 400
+            return "Error: No llegó el archivo al servidor.", 400
 
-        # 1. Limpiar el nombre del archivo para que Linux no colapse por espacios o emojis
         filename = secure_filename(file.filename)
         if not filename:
             filename = "video_iphone.mp4"
         
         filepath = os.path.join('/tmp', filename)
-        
-        # 2. Guardar el archivo
         file.save(filepath)
 
-        # 3. Procesar con ExifTool
+        # Se llama a la ruta local donde Render descargó ExifTool
         comando = [
-            'exiftool',
+            './exiftool-bin/exiftool',
             '-Make=Sony',
             '-Model=ILCE-7M4',
             '-Software=Adobe Premiere Pro',
@@ -62,11 +58,10 @@ def procesar():
         ]
         subprocess.run(comando, check=True)
 
-        # 4. Devolver el archivo
         return send_file(filepath, as_attachment=True)
         
     except subprocess.CalledProcessError:
-        return "Error 500: ExifTool falló al reescribir los metadatos. El archivo puede estar corrupto.", 500
+        return "Error 500: ExifTool falló al reescribir los metadatos.", 500
     except Exception as e:
         return f"Error interno detallado: {str(e)}", 500
 
